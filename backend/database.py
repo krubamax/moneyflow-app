@@ -7,7 +7,7 @@ from sqlalchemy import (
     Text, DateTime, Date, ForeignKey, Enum as SAEnum
 )
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
-from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
+from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode, quote
 import re
 from config import settings
 
@@ -27,6 +27,25 @@ def sanitize_db_url(url: str) -> str:
             
     try:
         parsed = urlparse(url)
+        
+        # Percent-encode password if it contains special characters (like '@')
+        username = parsed.username
+        password = quote(parsed.password) if parsed.password else None
+        hostname = parsed.hostname
+        port = parsed.port
+        
+        netloc = ""
+        if username:
+            netloc += username
+            if password:
+                netloc += f":{password}"
+            netloc += "@"
+        netloc += hostname if hostname else ""
+        if port:
+            netloc += f":{port}"
+            
+        parsed = parsed._replace(netloc=netloc)
+        
         q = parse_qsl(parsed.query)
         # Remove pgbouncer option which psycopg2 doesn't support
         filtered_q = [(k, v) for k, v in q if k.lower() != 'pgbouncer']
