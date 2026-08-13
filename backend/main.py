@@ -60,13 +60,13 @@ def startup():
         db.close()
 
 
-@app.get("/")
+@app.api_route("/", methods=["GET", "HEAD"])
 def root():
     """Redirect to frontend."""
     from fastapi.responses import RedirectResponse
     return RedirectResponse(url="/app/index.html")
 
 
-@app.get("/api/health")
+@app.api_route("/api/health", methods=["GET", "HEAD"])
 def health():
     return {"status": "ok", "app": settings.APP_NAME}
