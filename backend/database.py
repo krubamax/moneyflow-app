@@ -7,12 +7,30 @@ from sqlalchemy import (
     Text, DateTime, Date, ForeignKey, Enum as SAEnum
 )
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
+from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
 from config import settings
 
-connect_args = {"check_same_thread": False} if "sqlite" in settings.DATABASE_URL else {}
+def sanitize_db_url(url: str) -> str:
+    if not url:
+        return url
+    # SQLAlchemy requires postgresql:// instead of postgres://
+    if url.startswith("postgres://"):
+        url = url.replace("postgres://", "postgresql://", 1)
+    try:
+        parsed = urlparse(url)
+        q = parse_qsl(parsed.query)
+        # Remove pgbouncer option which psycopg2 doesn't support
+        filtered_q = [(k, v) for k, v in q if k.lower() != 'pgbouncer']
+        parsed = parsed._replace(query=urlencode(filtered_q))
+        return urlunparse(parsed)
+    except Exception:
+        return url
+
+db_url = sanitize_db_url(settings.DATABASE_URL)
+connect_args = {"check_same_thread": False} if "sqlite" in db_url else {}
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     connect_args=connect_args
 )
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
