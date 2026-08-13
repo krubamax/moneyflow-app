@@ -8,6 +8,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import sessionmaker, declarative_base, relationship
 from urllib.parse import urlparse, urlunparse, parse_qsl, urlencode
+import re
 from config import settings
 
 def sanitize_db_url(url: str) -> str:
@@ -16,6 +17,14 @@ def sanitize_db_url(url: str) -> str:
     # SQLAlchemy requires postgresql:// instead of postgres://
     if url.startswith("postgres://"):
         url = url.replace("postgres://", "postgresql://", 1)
+        
+    # Strip accidental brackets around domain host or password
+    if "[" in url:
+        bracket_contents = re.findall(r'\[([^\]]+)\]', url)
+        has_domain_in_brackets = any(re.search(r'[g-zG-Z]', content) for content in bracket_contents)
+        if has_domain_in_brackets or url.count("[") != url.count("]"):
+            url = url.replace("[", "").replace("]", "")
+            
     try:
         parsed = urlparse(url)
         q = parse_qsl(parsed.query)
