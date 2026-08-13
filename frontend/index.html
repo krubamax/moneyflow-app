@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบจัดการรายรับ-รายจ่าย | Money Manager</title>
+    <meta name="description" content="ระบบจัดการรายรับ-รายจ่ายส่วนบุคคล รองรับหลายกระเป๋าเงิน Dashboard สรุปผล Export PDF และ Google Sheets">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <span class="logo-icon">💰</span>
+                <span class="logo-text">Money<span class="logo-accent">Flow</span></span>
+            </div>
+            <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                <span class="material-icons-round">menu</span>
+            </button>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active" data-page="dashboard" id="nav-dashboard">
+                <span class="material-icons-round">dashboard</span>
+                <span class="nav-label">แดชบอร์ด</span>
+            </a>
+            <a href="#transactions" class="nav-item" data-page="transactions" id="nav-transactions">
+                <span class="material-icons-round">receipt_long</span>
+                <span class="nav-label">รายการ</span>
+            </a>
+            <a href="#wallets" class="nav-item" data-page="wallets" id="nav-wallets">
+                <span class="material-icons-round">account_balance_wallet</span>
+                <span class="nav-label">กระเป๋าเงิน</span>
+            </a>
+            <a href="#budgets" class="nav-item" data-page="budgets" id="nav-budgets">
+                <span class="material-icons-round">savings</span>
+                <span class="nav-label">งบประมาณ</span>
+            </a>
+            <a href="#recurring" class="nav-item" data-page="recurring" id="nav-recurring">
+                <span class="material-icons-round">autorenew</span>
+                <span class="nav-label">รายการประจำ</span>
+            </a>
+            <a href="#export" class="nav-item" data-page="export" id="nav-export">
+                <span class="material-icons-round">file_download</span>
+                <span class="nav-label">ส่งออกข้อมูล</span>
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <span class="material-icons-round" id="themeIcon">dark_mode</span>
+                <span class="nav-label" id="themeLabel">โหมดสว่าง</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Mobile Top Bar -->
+    <header class="mobile-header" id="mobileHeader">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+            <span class="material-icons-round">menu</span>
+        </button>
+        <span class="mobile-title">💰 MoneyFlow</span>
+        <button class="theme-toggle-mobile" id="themeToggleMobile" aria-label="Toggle theme">
+            <span class="material-icons-round" id="themeIconMobile">dark_mode</span>
+        </button>
+    </header>
+
+    <!-- Overlay for mobile sidebar -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Pages will be rendered here by JS -->
+        <div id="page-container"></div>
+    </main>
+
+    <!-- Add Transaction Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal" id="transactionModal">
+            <div class="modal-header">
+                <h2 id="modalTitle">เพิ่มรายการ</h2>
+                <button class="modal-close" id="modalClose" aria-label="Close modal">
+                    <span class="material-icons-round">close</span>
+                </button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Dynamic form content -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Budget Alert Banner -->
+    <div class="alert-banner" id="alertBanner" style="display:none;">
+        <span class="material-icons-round">warning</span>
+        <span id="alertText"></span>
+        <button class="alert-close" id="alertClose">
+            <span class="material-icons-round">close</span>
+        </button>
+    </div>
+
+    <!-- FAB: Add Transaction -->
+    <button class="fab" id="fabAdd" aria-label="เพิ่มรายการ">
+        <span class="material-icons-round">add</span>
+    </button>
+
+    <script src="js/api.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/transactions.js"></script>
+    <script src="js/wallets.js"></script>
+    <script src="js/budgets.js"></script>
+    <script src="js/recurring.js"></script>
+    <script src="js/export.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>

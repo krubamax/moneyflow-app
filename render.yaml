@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: moneyflow-app
+    env: docker
+    dockerfilePath: Dockerfile
+    plan: free
+    region: singapore
+    envVars:
+      - key: DATABASE_URL
+        value: sqlite:///./money.db
+      - key: UPLOAD_DIR
+        value: ./uploads
+      - key: SUPABASE_URL
+        value: https://dvfvzrgkokbgybpxzzuk.supabase.co
+      - key: SUPABASE_KEY
+        value: sb_publishable_jxsmKhucFXzwS5cCKkBV8w_loMtstpa

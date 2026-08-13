@@ -1,0 +1,25 @@
+# Environment & Secrets
+.env
+*.env
+*.json
+!package.json
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.pytest_cache/
+
+# Database & Storage
+backend/money.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

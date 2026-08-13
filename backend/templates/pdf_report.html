@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <title>รายงานรายรับ-รายจ่าย {{ month_name }} {{ year }}</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 1.5cm;
+            @bottom-center {
+                content: "หน้า " counter(page) " จาก " counter(pages);
+                font-size: 9px;
+                color: #888;
+            }
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Sarabun', 'Noto Sans Thai', sans-serif;
+            font-size: 11px;
+            color: #1a1a2e;
+            line-height: 1.5;
+            background: #fff;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            color: white;
+            padding: 20px 25px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .header .subtitle {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .summary-cards {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .summary-card {
+            flex: 1;
+            padding: 14px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-card.income {
+            background: #ecfdf5;
+            border: 1px solid #a7f3d0;
+        }
+
+        .summary-card.expense {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+        }
+
+        .summary-card.net {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+        }
+
+        .summary-card .label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .summary-card .value {
+            font-size: 18px;
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        .summary-card.income .value { color: #059669; }
+        .summary-card.expense .value { color: #dc2626; }
+        .summary-card.net .value { color: #2563eb; }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #0f172a;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 10px;
+        }
+
+        table th {
+            background: #f1f5f9;
+            color: #475569;
+            font-weight: 600;
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        table td {
+            padding: 7px 10px;
+            border-bottom: 1px solid #e2e8f0;
+            vertical-align: top;
+        }
+
+        table tr:nth-child(even) {
+            background: #f8fafc;
+        }
+
+        .amount-income { color: #059669; font-weight: 600; }
+        .amount-expense { color: #dc2626; font-weight: 600; }
+        .amount-transfer { color: #d97706; font-weight: 600; }
+
+        .cat-bar-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .cat-bar {
+            height: 10px;
+            border-radius: 5px;
+            min-width: 4px;
+        }
+
+        .cat-percentage {
+            font-size: 9px;
+            color: #888;
+            white-space: nowrap;
+        }
+
+        .text-right { text-align: right; }
+        .text-center { text-align: center; }
+
+        .footer {
+            margin-top: 20px;
+            padding-top: 10px;
+            border-top: 1px solid #e2e8f0;
+            text-align: center;
+            font-size: 9px;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <div class="header">
+        <h1>📊 รายงานรายรับ-รายจ่าย</h1>
+        <div class="subtitle">ประจำเดือน {{ month_name }} {{ year }} — จำนวน {{ transaction_count }} รายการ</div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+        <div class="summary-card income">
+            <div class="label">💰 รายรับรวม</div>
+            <div class="value">฿{{ "{:,.2f}".format(total_income) }}</div>
+        </div>
+        <div class="summary-card expense">
+            <div class="label">💸 รายจ่ายรวม</div>
+            <div class="value">฿{{ "{:,.2f}".format(total_expense) }}</div>
+        </div>
+        <div class="summary-card net">
+            <div class="label">📈 ยอดสุทธิ</div>
+            <div class="value">฿{{ "{:,.2f}".format(net_balance) }}</div>
+        </div>
+    </div>
+
+    <!-- Expense Breakdown -->
+    {% if expense_by_category %}
+    <div class="section">
+        <div class="section-title">📋 สรุปรายจ่ายตามหมวดหมู่</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:30%">หมวดหมู่</th>
+                    <th style="width:20%" class="text-right">ยอดรวม</th>
+                    <th style="width:10%" class="text-center">จำนวน</th>
+                    <th style="width:40%">สัดส่วน</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat_name, cat_data in expense_by_category %}
+                <tr>
+                    <td>{{ cat_data.icon }} {{ cat_name }}</td>
+                    <td class="text-right amount-expense">฿{{ "{:,.2f}".format(cat_data.total) }}</td>
+                    <td class="text-center">{{ cat_data.count }}</td>
+                    <td>
+                        <div class="cat-bar-container">
+                            <div class="cat-bar" style="width:{{ cat_data.percentage }}%;background:{{ cat_data.color }}"></div>
+                            <span class="cat-percentage">{{ cat_data.percentage }}%</span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Income Breakdown -->
+    {% if income_by_category %}
+    <div class="section">
+        <div class="section-title">💰 สรุปรายรับตามหมวดหมู่</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:30%">หมวดหมู่</th>
+                    <th style="width:20%" class="text-right">ยอดรวม</th>
+                    <th style="width:10%" class="text-center">จำนวน</th>
+                    <th style="width:40%">สัดส่วน</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat_name, cat_data in income_by_category %}
+                <tr>
+                    <td>{{ cat_data.icon }} {{ cat_name }}</td>
+                    <td class="text-right amount-income">฿{{ "{:,.2f}".format(cat_data.total) }}</td>
+                    <td class="text-center">{{ cat_data.count }}</td>
+                    <td>
+                        <div class="cat-bar-container">
+                            <div class="cat-bar" style="width:{{ cat_data.percentage }}%;background:{{ cat_data.color }}"></div>
+                            <span class="cat-percentage">{{ cat_data.percentage }}%</span>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- Transaction Log -->
+    <div class="section" style="page-break-before: auto;">
+        <div class="section-title">📝 รายการทั้งหมด</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:12%">วันที่</th>
+                    <th style="width:12%">ประเภท</th>
+                    <th style="width:15%" class="text-right">จำนวนเงิน</th>
+                    <th style="width:18%">หมวดหมู่</th>
+                    <th style="width:15%">กระเป๋า</th>
+                    <th style="width:28%">รายละเอียด</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>{{ t.date }}</td>
+                    <td>{{ t.type_label }}</td>
+                    <td class="text-right amount-{{ t.type }}">
+                        {% if t.type == 'income' %}+{% elif t.type == 'expense' %}-{% endif %}฿{{ "{:,.2f}".format(t.amount) }}
+                    </td>
+                    <td>{{ t.category_icon }} {{ t.category }}</td>
+                    <td>{{ t.wallet }}{% if t.to_wallet %} → {{ t.to_wallet }}{% endif %}</td>
+                    <td>{{ t.description }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer">
+        สร้างจากระบบจัดการรายรับ-รายจ่าย | {{ month_name }} {{ year }}
+    </div>
+
+</body>
+</html>
